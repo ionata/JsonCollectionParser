@@ -11,9 +11,15 @@
             "email": "maxakawizard@gmail.com"
         }
     ],
+    "repositories": [
+        {
+            "url": "https://github.com/ionata/jsonstreamingparser.git",
+            "type": "git",
+        }
+    ],
     "require": {
         "php": "^5.4 | ^7.0",
-        "salsify/json-streaming-parser": "~6.0"
+        "salsify/json-streaming-parser": "6.0.2p1@dev"
     },
     "require-dev": {
         "satooshi/php-coveralls": "~1.0",

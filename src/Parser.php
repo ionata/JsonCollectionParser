@@ -17,6 +17,17 @@ class Parser
     protected $parser;
 
     /**
+     * @var resource
+     */
+    private $stream;
+
+    /**
+     * @var bool
+     */
+    private $pauseParsing = false;
+    
+
+    /**
      * @param string $filePath Source file path
      * @param callback|callable $itemCallback Callback
      * @param bool $assoc Parse as associative arrays
@@ -27,22 +38,41 @@ class Parser
     {
         $this->checkCallback($itemCallback);
 
-        $stream = $this->openFile($filePath);
+        $this->stream = $this->openFile($filePath);
 
         try {
             $listener = new Listener($itemCallback, $assoc);
             $this->parser = new \JsonStreamingParser\Parser(
-                $stream,
+                $this->stream,
                 $listener,
                 $this->getOption('line_ending'),
                 $this->getOption('emit_whitespace')
             );
             $this->parser->parse();
         } catch (\Exception $e) {
-            fclose($stream);
+            fclose($this->stream);
             throw $e;
         }
-        fclose($stream);
+        if (!$this->pauseParsing) {
+            fclose($this->stream);
+        }
+    }
+
+    /**
+     *
+     */
+    public function resume()
+    {
+        $this->pauseParsing = false;
+        try {
+            $this->parser->resume();
+        } catch (\Exception $e) {
+            fclose($this->stream);
+            throw $e;
+        }
+        if (!$this->pauseParsing) {
+            fclose($this->stream);
+        }
     }
 
     /**
@@ -51,6 +81,15 @@ class Parser
     public function stop()
     {
         $this->parser->stop();
+    }
+
+    /**
+     *
+     */
+    public function pause()
+    {
+        $this->pauseParsing = true;
+        $this->parser->pause();
     }
 
     /**
